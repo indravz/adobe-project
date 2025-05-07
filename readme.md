@@ -1,3 +1,5 @@
+
+![AWS-Architecture.png](AWS-Architecture.png)
 ```markdown
 # 3-Tier Web Application with React, Spring Boot, and Terraform
 
