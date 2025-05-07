@@ -110,4 +110,4 @@ v
 This project demonstrates secure cloud deployment using infrastructure as code and modern web technologies. Feedback and contributions are welcome.
 ``
 
-![AWS web application hosting.png](../../AWS%20web%20application%20hosting.png)
+![AWS-Architecture.png](AWS-Architecture.png)
