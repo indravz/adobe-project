@@ -1,5 +1,3 @@
-Here’s the entire content in a single markdown block:
-
 ```markdown
 # 3-Tier Web Application with React, Spring Boot, and Terraform
 
