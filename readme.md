@@ -28,7 +28,7 @@ This application follows a 3-tier architecture consisting of:
 - Secured using AWS Cognito for user registration and login
 - Frontend and backend communication is protected via OAuth-based JWT tokens
 
-**Note:** API endpoints are rate-limited to ensure fair usage and prevent abuse.
+**Note:** API endpoints are rate-limited.
 
 ---
 
