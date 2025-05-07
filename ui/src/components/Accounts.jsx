@@ -19,15 +19,20 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  IconButton,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const accountTypes = ["INDIVIDUAL", "JOINT"]; // update as per your backend enum
+const accountTypes = ["INDIVIDUAL", "JOINT"];
 
-function Accounts({ userId }) {
+function Accounts({ userId, auth }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [currentEditId, setCurrentEditId] = useState(null);
   const [form, setForm] = useState({
     accountNumber: "",
     accountType: "",
@@ -35,24 +40,27 @@ function Accounts({ userId }) {
   const [creating, setCreating] = useState(false);
 
   const fetchAccounts = async () => {
+    if (!userId) {
+      setError("User ID is missing.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(`${config.API_BASE_URL}/api/accounts`, {
-        method: "GET",
-        credentials: "include",
+      const res = await axios.get(`${config.API_BASE_URL}/accounts/user/${userId}`, {
         headers: {
+          Authorization: `Bearer ${auth.user?.id_token}`,
           "Content-Type": "application/json",
         },
+        withCredentials: true,
       });
 
-      if (!res.ok) throw new Error(`API responded with ${res.status}`);
+      const data = res.data;
 
-      const data = await res.json();
-
-      const processed = data.map((item, index) => ({
-        id: index + 1,
+      const processed = data.map((item) => ({
+        id: item.id,
         accountNumber: item.accountNumber,
         accountType: item.accountType,
         userId: item.userId,
@@ -73,39 +81,102 @@ function Accounts({ userId }) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleCreateAccount = async () => {
-    if (!form.accountNumber || !form.accountType) return;
+  const handleCreateOrUpdateAccount = async () => {
+    if (!form.accountType) return;
 
     setCreating(true);
     try {
-      await axios.post(
-        `${config.API_BASE_URL}/api/accounts`,
-        {
-          accountNumber: form.accountNumber,
-          accountType: form.accountType,
-          userId: userId,
-        },
-        { withCredentials: true }
-      );
+      if (editMode && currentEditId) {
+        await axios.put(
+          `${config.API_BASE_URL}/accounts/${currentEditId}`,
+          {
+            id: currentEditId,
+            accountNumber: form.accountNumber,
+            accountType: form.accountType,
+            userId: userId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${auth.user?.id_token}`,
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+      } else {
+        await axios.post(
+          `${config.API_BASE_URL}/accounts`,
+          {
+            accountNumber: "", // server generates it or auto-filled
+            accountType: form.accountType,
+            userId: userId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${auth.user?.id_token}`,
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+      }
 
       setDialogOpen(false);
       setForm({ accountNumber: "", accountType: "" });
+      setEditMode(false);
+      setCurrentEditId(null);
       fetchAccounts();
     } catch (err) {
-      console.error("Account creation failed:", err);
-      alert("Failed to create account.");
+      console.error("Account create/update failed:", err);
+      alert("Failed to process account.");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleEditClick = (account) => {
+    setForm({
+      accountNumber: account.accountNumber, // prefill for PUT call
+      accountType: account.accountType,
+    });
+    setEditMode(true);
+    setCurrentEditId(account.id);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this account?")) return;
+
+    try {
+      await axios.delete(`${config.API_BASE_URL}/accounts/${id}`, {
+        headers: {
+          Authorization: `Bearer ${auth.user?.id_token}`,
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      fetchAccounts();
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete account.");
     }
   };
 
   return (
     <Box sx={{ mt: 3 }}>
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <Button variant="contained" onClick={fetchAccounts}>
+        <Button variant="contained" onClick={fetchAccounts} disabled={!userId}>
           List Accounts
         </Button>
-        <Button variant="outlined" onClick={() => setDialogOpen(true)}>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setEditMode(false);
+            setForm({ accountNumber: "", accountType: "" });
+            setDialogOpen(true);
+          }}
+        >
           Create Account
         </Button>
       </Box>
@@ -132,6 +203,7 @@ function Accounts({ userId }) {
                 <TableCell><strong>User ID</strong></TableCell>
                 <TableCell><strong>Created At</strong></TableCell>
                 <TableCell><strong>Updated At</strong></TableCell>
+                <TableCell><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -142,6 +214,14 @@ function Accounts({ userId }) {
                   <TableCell>{row.userId}</TableCell>
                   <TableCell>{row.createdAt}</TableCell>
                   <TableCell>{row.updatedAt}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleEditClick(row)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(row.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -149,27 +229,21 @@ function Accounts({ userId }) {
         </Paper>
       )}
 
-      {rows.length === 0 && !loading && !error && (
-        <Typography variant="h6" sx={{ mt: 3 }}>
-          Welcome to the App
-        </Typography>
-      )}
-
-      {/* Dialog for Create Account */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Create New Account</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+        <DialogTitle>{editMode ? "Edit Account" : "Create New Account"}</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
           <TextField
             label="Account Number"
             name="accountNumber"
             value={form.accountNumber}
             onChange={handleFormChange}
             fullWidth
+            disabled // always disabled
           />
           <TextField
-            select
             label="Account Type"
             name="accountType"
+            select
             value={form.accountType}
             onChange={handleFormChange}
             fullWidth
@@ -185,13 +259,8 @@ function Accounts({ userId }) {
           <Button onClick={() => setDialogOpen(false)} disabled={creating}>
             Cancel
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleCreateAccount}
-            disabled={creating}
-            startIcon={creating ? <CircularProgress size={18} /> : null}
-          >
-            {creating ? "Creating..." : "Create Account"}
+          <Button onClick={handleCreateOrUpdateAccount} variant="contained" disabled={creating}>
+            {creating ? "Saving..." : editMode ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>

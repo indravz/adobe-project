@@ -18,11 +18,31 @@ import {
   Toolbar,
 } from "@mui/material";
 
+axios.defaults.withCredentials = true;
+
 function App() {
   const auth = useAuth();
   const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState(null);
   const [backendMessage, setBackendMessage] = useState("");
+
+  // Axios interceptor for Authorization header
+  useEffect(() => {
+    if (auth.user?.id_token) {
+      const interceptor = axios.interceptors.request.use(
+        (config) => {
+          config.headers.Authorization = `Bearer ${auth.user.id_token}`;
+          return config;
+        },
+        (error) => Promise.reject(error)
+      );
+
+      // Cleanup to remove the interceptor when user logs out or component unmounts
+      return () => {
+        axios.interceptors.request.eject(interceptor);
+      };
+    }
+  }, [auth.user?.id_token]);
 
   useEffect(() => {
     if (auth.user) {
@@ -31,7 +51,7 @@ function App() {
 
       const checkAndCreateUser = async () => {
         try {
-          const response = await axios.get(`${config.API_BASE_URL}/api/users/check-email`, {
+          const response = await axios.get(`${config.API_BASE_URL}/users/check-email`, {
             params: { email },
           });
 
@@ -42,7 +62,7 @@ function App() {
               email,
               name: auth.user.profile?.name || "Unknown User",
             };
-            const createResp = await axios.post(`${config.API_BASE_URL}/api/users`, newUser);
+            const createResp = await axios.post(`${config.API_BASE_URL}/users`, newUser);
             setUserId(createResp.data.id);
             setBackendMessage("User created on our backend.");
           }
@@ -118,7 +138,7 @@ function App() {
               )}
             </Paper>
 
-            {<Accounts userId= {userId} />}
+            <Accounts userId={userId} auth={auth} />
           </>
         ) : (
           <>

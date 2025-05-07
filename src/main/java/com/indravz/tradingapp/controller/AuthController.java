@@ -15,6 +15,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(
+        origins = {"http://localhost", "https://indras.adobe-project.online"},
+        allowCredentials = "true"
+)
 public class AuthController {
 
     @Autowired

@@ -13,7 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/accounts")
-@CrossOrigin(origins="http://localhost", allowCredentials = "true")
+@CrossOrigin(
+        origins = {"http://localhost", "https://indras.adobe-project.online"},
+        allowCredentials = "true"
+)
 public class AccountController {
 
     @Autowired
