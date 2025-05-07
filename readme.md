@@ -1,7 +1,6 @@
-
+https://indras.adobe-project.online/
 ![AWS-Architecture.png](AWS-Architecture.png)
 ```markdown
-**https://indras.adobe-project.online/**
 # 3-Tier Web Application with React, Spring Boot, and Terraform
 
 This repository contains the code for a 3-tier web application built using:
