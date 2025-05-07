@@ -28,7 +28,7 @@ This application follows a 3-tier architecture consisting of:
 - Secured using AWS Cognito for user registration and login
 - Frontend and backend communication is protected via OAuth-based JWT tokens
 
-**Note:** API endpoints are rate-limited to ensure fair usage and prevent abuse.
+**Note:** API endpoints are rate-limited.
 
 ---
 
@@ -110,4 +110,4 @@ v
 This project demonstrates secure cloud deployment using infrastructure as code and modern web technologies. Feedback and contributions are welcome.
 ``
 
-![AWS-Architecture.png](AWS-Architecture.png)
+![AWS web application hosting.png](../../AWS%20web%20application%20hosting.png)
