@@ -17,7 +17,7 @@ The application is deployed on AWS using services such as ECS, Application Load 
 
 This application follows a 3-tier architecture consisting of:
 
-### 1. Frontend (React.js)
+### 1. Frontend (React.js)endpoint
 - Deployed on Amazon ECS within a public subnet
 - Served through an Application Load Balancer (ALB)
 - Accessible via: [https://indras.adobe-project.online/](https://indras.adobe-project.online/)
@@ -111,5 +111,25 @@ v
 
 This project demonstrates secure cloud deployment using infrastructure as code and modern web technologies. Feedback and contributions are welcome.
 ``
+
+
+Edit: I have brought downt the services in AWS to save cost. Attaching screenshots of the application for reference
+
+![Screenshot-3.png](Screenshot-3.png)  
+![Screenshot-4.png](Screenshot-4.png)  
+![Screenshot-5.png](Screenshot-5.png)  
+![Screenshot-6.png](Screenshot-6.png)  
+![Screenshot-7.png](Screenshot-7.png)  
+![Screenshot-8.png](Screenshot-8.png)  
+![Screenshot-9.png](Screenshot-9.png)  
+![Screenshot-10.png](Screenshot-10.png)  
+![Screenshot-11.png](Screenshot-11.png)  
+![Screenshot-12.png](Screenshot-12.png)  
+![Screenshot-13.png](Screenshot-13.png)  
+![Screenshot-14.png](Screenshot-14.png)  
+![Screenshot-15.png](Screenshot-15.png)  
+![Screenshot-16.png](Screenshot-16.png)  
+![Screenshot-17.png](Screenshot-17.png)
+
 
 ![AWS web application hosting.png](../../AWS%20web%20application%20hosting.png)
